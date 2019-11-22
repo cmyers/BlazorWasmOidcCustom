@@ -1,5 +1,5 @@
 ﻿@page "/fetchdata"
-@using BlazorClientTest.Shared
+@using BlazorClientTest.Shared.Models
 @inject HttpClient Http
 
 <h1>Weather forecast</h1>
@@ -40,7 +40,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("WeatherForecast");
+        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("api/WeatherForecast");
     }
 
 }
