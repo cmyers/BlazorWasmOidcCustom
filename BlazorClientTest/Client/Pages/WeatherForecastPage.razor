@@ -1,5 +1,5 @@
 ﻿@page "/weatherforecast"
-@using BlazorClientTest.Shared.Models
+@inherits WeatherForecastPageBase
 @inject HttpClient Http
 
 <h1>Weather forecast</h1>
@@ -33,14 +33,4 @@ else
             }
         </tbody>
     </table>
-}
-
-@code {
-    private WeatherForecast[] forecasts;
-
-    protected override async Task OnInitializedAsync()
-    {
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("api/WeatherForecast");
-    }
-
 }
