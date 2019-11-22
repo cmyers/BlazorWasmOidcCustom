@@ -22,7 +22,7 @@ namespace BlazorClientTest.Server.Controllers
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
-            _logger.LogInformation(Request.Path);
+            _logger.LogInformation(Request.Path.ToString());
             return _weatherForecastService.Get();
         }
     }
