@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BlazorClientTest.Shared.Interfaces
+﻿namespace BlazorClientTest.Shared.Interfaces
 {
     public interface ICounterService
     {

@@ -1,4 +1,5 @@
 using BlazorClientTest.Shared.Interfaces;
+using BlazorClientTest.Shared.Repositories;
 using BlazorClientTest.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +24,7 @@ namespace BlazorClientTest.Server
             });
             services.AddApplicationInsightsTelemetry();
             services.AddTransient<IWeatherForecastService, WeatherForecastService>();
+            services.AddTransient<IWeatherForecastRepository, WeatherForecastRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
