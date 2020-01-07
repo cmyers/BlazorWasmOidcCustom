@@ -1,8 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="sidebar">
-    <NavMenu />
-</div>
+@using Microsoft.AspNetCore.Components.Authorization
+
+    <div class="sidebar">
+        <AuthorizeView>
+            <Authorized>
+                <NavMenu />
+            </Authorized>
+        </AuthorizeView>
+    </div>
 
 <div class="main">
     <div class="top-row px-4">
@@ -10,6 +16,14 @@
     </div>
 
     <div class="content px-4">
-        @Body
+        <AuthorizeView>
+            <Authorized>
+                @Body
+            </Authorized>
+            <NotAuthorized>
+                <h1>Authentication Failure!</h1>
+                <p>You're not signed in.</p>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
