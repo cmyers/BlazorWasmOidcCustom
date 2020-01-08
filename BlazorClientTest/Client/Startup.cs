@@ -12,8 +12,8 @@ namespace BlazorClientTest.Client
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<ICounterService, CounterService>();
-            services.AddAuthorizationCore();
             services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services.AddAuthorizationCore();
         }
 
         public void Configure(IComponentsApplicationBuilder app)
