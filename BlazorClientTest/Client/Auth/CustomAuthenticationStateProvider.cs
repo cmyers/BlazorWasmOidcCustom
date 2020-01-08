@@ -7,12 +7,13 @@ namespace BlazorClientTest.Client.Auth
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
+        private bool _authenticated = false;
+
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            bool authenticated = true;
             ClaimsIdentity identity;
 
-            if (authenticated)
+            if (_authenticated)
             {
                 identity = new ClaimsIdentity(new List<Claim>
                 {
@@ -28,6 +29,12 @@ namespace BlazorClientTest.Client.Auth
             var user = new ClaimsPrincipal(identity);
 
             return Task.FromResult(new AuthenticationState(user));
+        }
+
+        public void SetAuthenticated (bool authenticated)
+        {
+            _authenticated = authenticated;
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
     }
