@@ -1,3 +1,7 @@
+using BlazorClientTest.Client.Auth;
+using BlazorClientTest.Shared.Interfaces;
+using BlazorClientTest.Shared.Services;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,6 +11,9 @@ namespace BlazorClientTest.Client
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ICounterService, CounterService>();
+            services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+            services.AddAuthorizationCore();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

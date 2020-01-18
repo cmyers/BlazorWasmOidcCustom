@@ -1,3 +1,6 @@
+using BlazorClientTest.Shared.Interfaces;
+using BlazorClientTest.Shared.Repositories;
+using BlazorClientTest.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -19,6 +22,9 @@ namespace BlazorClientTest.Server
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+            services.AddApplicationInsightsTelemetry();
+            services.AddTransient<IWeatherForecastService, WeatherForecastService>();
+            services.AddTransient<IWeatherForecastRepository, WeatherForecastRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
