@@ -15,9 +15,18 @@ namespace BlazorWebAssemblyTest.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
-
             builder.Services.AddBaseAddressHttpClient();
-            builder.Services.AddApiAuthorization();
+            builder.Services.AddOidcAuthentication(options =>
+            {
+                options.ProviderOptions.Authority = "https://localhost:44303";
+                options.ProviderOptions.ClientId = "blazorclient";
+                options.ProviderOptions.ResponseType = "code";
+                options.ProviderOptions.DefaultScopes.Add("openid");
+                options.ProviderOptions.DefaultScopes.Add("profile");
+                options.ProviderOptions.DefaultScopes.Add("email");
+                options.ProviderOptions.DefaultScopes.Add("offline_access");
+                options.ProviderOptions.DefaultScopes.Add("Resource.API.Test.access");
+            });
             builder.Services.AddSingleton<ICounterService, CounterService>();
 
             await builder.Build().RunAsync();

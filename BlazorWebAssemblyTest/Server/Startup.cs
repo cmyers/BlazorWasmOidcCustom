@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,13 @@ using BlazorWebAssemblyTest.Server.Models;
 using BlazorWebAssemblyTest.Shared.Interfaces;
 using BlazorWebAssemblyTest.Shared.Services;
 using BlazorWebAssemblyTest.Shared.Repositories;
+using System.Collections.Generic;
+using IdentityServer4;
+using IdentityServer4.Models;
+using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
+using Microsoft.AspNetCore.Identity;
+using IdentityServer4.AccessTokenValidation;
+using BlazorWebAssemblyTest.Server.Services;
 
 namespace BlazorWebAssemblyTest.Server
 {
@@ -27,17 +33,82 @@ namespace BlazorWebAssemblyTest.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedAccount = true;
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultUI()
+                .AddDefaultTokenProviders();
 
             services.AddIdentityServer()
-                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+               .AddDeveloperSigningCredential()
+               .AddInMemoryPersistedGrants()
+               .AddInMemoryIdentityResources(new IdentityResourceCollection
+                    {
+                        new IdentityResources.OpenId(),
+                        new IdentityResources.Profile(),
+                        new IdentityResources.Email()
+                    })
+               .AddInMemoryApiResources(new ApiResourceCollection
+                    {
+                        new ApiResource
+                        {
+                            Name = "Resource.API.Test",
+                            ApiSecrets = new List<Secret>
+                            {
+                                new Secret("{somesecret}".Sha256())
+                            },
+                            Scopes =
+                            {
+                                new Scope()
+                                {
+                                    Name = "Resource.API.Test.access",
+                                    DisplayName = "Full access",
+                                    UserClaims = {"Resource.API.Test.access.level" }
+                                }
+                            }
+                        }
+                    })
+               .AddInMemoryClients(new ClientCollection
+                    {
+                        new IdentityServer4.Models.Client
+                        {
+                            ClientId = "blazorclient",
+                            ClientName = "Resource.API.Test",
+                            AllowedGrantTypes = GrantTypes.Code,
+                            RequirePkce = true,
+                            AllowedScopes = new List<string> {
+                                IdentityServerConstants.StandardScopes.OpenId,
+                                IdentityServerConstants.StandardScopes.Profile,
+                                IdentityServerConstants.StandardScopes.Email,
+                                IdentityServerConstants.StandardScopes.OfflineAccess,
+                                "Resource.API.Test.access"},
+                            AllowOfflineAccess = true,
+                            RedirectUris = {"https://localhost:44303/authentication/login-callback"},
+                            PostLogoutRedirectUris = { "https://localhost:44303/authentication/logout-callback" },
+                            RequireClientSecret = false,
+                            RequireConsent = false
+                        }
+                    })
+               .AddAspNetIdentity<ApplicationUser>()
+               .AddProfileService<AuthProfileService>();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Resource.API.Test", builder => builder.RequireClaim("access_level", "auth.admin"));
+            });
 
             services.AddAuthentication()
-                .AddIdentityServerJwt();
+                .AddIdentityServerAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme, options =>
+                {
+                    options.Authority = "https://localhost:44303";
+                    options.RequireHttpsMetadata = true;
+                    options.ApiName = "Resource.API.Test";
+                    options.ApiSecret = "{somesecret}";
+                });
 
             services.AddTransient<IWeatherForecastService, WeatherForecastService>();
             services.AddTransient<IWeatherForecastRepository, WeatherForecastRepository>();
@@ -68,8 +139,8 @@ namespace BlazorWebAssemblyTest.Server
 
             app.UseRouting();
 
-            app.UseAuthentication();
             app.UseIdentityServer();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

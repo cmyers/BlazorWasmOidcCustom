@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using BlazorWebAssemblyTest.Shared.Interfaces;
 using BlazorWebAssemblyTest.Shared.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace BlazorWebAssemblyTest.Server.Controllers
 {
-    [Authorize]
+    [Authorize(Policy = "Resource.API.Test", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class WeatherForecastController : ControllerBase
