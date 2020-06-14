@@ -13,6 +13,7 @@ namespace BlazorWebAssemblyTest.Client.Pages
     public class WeatherForecastPageBase : ComponentBase
     {
         protected WeatherForecast[] forecasts;
+        protected string error;
 
         [Inject]
         public NavigationManager Navigation { get; set; }
@@ -29,14 +30,20 @@ namespace BlazorWebAssemblyTest.Client.Pages
 
             if (tokenResult.TryGetToken(out var token))
             {
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
-                forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("api/WeatherForecast");
+                try
+                {
+                    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
+                    forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("api/WeatherForecast");
+                }
+                catch (HttpRequestException exception)
+                {
+                    error = exception.Message;
+                }
             }
             else
             {
                 Navigation.NavigateTo(tokenResult.RedirectUrl);
             }
-
         }
     }
 }
