@@ -5,9 +5,13 @@
 
 <p>This component demonstrates fetching data from the server.</p>
 
-@if (forecasts == null)
+@if (forecasts == null && error == null)
 {
     <p><em>Loading...</em></p>
+}
+else if (error != null)
+{
+    <p><em>@error</em></p>
 }
 else
 {
