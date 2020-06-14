@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Json;
 
 namespace BlazorWebAssemblyTest.Client.Pages
 {
@@ -29,7 +30,7 @@ namespace BlazorWebAssemblyTest.Client.Pages
             if (tokenResult.TryGetToken(out var token))
             {
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.Value}");
-                forecasts = await httpClient.GetJsonAsync<WeatherForecast[]>("api/WeatherForecast");
+                forecasts = await httpClient.GetFromJsonAsync<WeatherForecast[]>("api/WeatherForecast");
             }
             else
             {
