@@ -107,7 +107,6 @@ namespace BlazorWebAssemblyTest.Server
                     options.Authority = "https://localhost:44303";
                     options.RequireHttpsMetadata = true;
                     options.ApiName = "Resource.API.Test";
-                    options.ApiSecret = "{somesecret}";
                 });
 
             services.AddTransient<IWeatherForecastService, WeatherForecastService>();
