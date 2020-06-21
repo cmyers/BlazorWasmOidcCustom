@@ -1,14 +1,8 @@
 using System;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using BlazorWasmOidcCustom.Shared.Interfaces;
 using BlazorWasmOidcCustom.Shared.Services;
 
@@ -26,13 +20,14 @@ namespace BlazorWasmOidcCustom.Client
             builder.Services.AddOidcAuthentication(options =>
             {
                 options.ProviderOptions.Authority = "https://localhost:44303";
-                options.ProviderOptions.ClientId = "blazorclient";
+                options.ProviderOptions.ClientId = "BlazorClient";
                 options.ProviderOptions.ResponseType = "code";
                 options.ProviderOptions.DefaultScopes.Add("openid");
                 options.ProviderOptions.DefaultScopes.Add("profile");
                 options.ProviderOptions.DefaultScopes.Add("email");
                 options.ProviderOptions.DefaultScopes.Add("offline_access");
-                options.ProviderOptions.DefaultScopes.Add("Resource.API.Test.access");
+                options.ProviderOptions.DefaultScopes.Add("Weather.Read");
+                options.ProviderOptions.DefaultScopes.Add("Weather.Write");
             });
             builder.Services.AddSingleton<ICounterService, CounterService>();
 
