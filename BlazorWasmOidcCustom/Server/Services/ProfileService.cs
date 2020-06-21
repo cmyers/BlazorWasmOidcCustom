@@ -1,9 +1,8 @@
 ﻿using BlazorWasmOidcCustom.Server.Data;
 using BlazorWasmOidcCustom.Server.Models;
+using IdentityModel;
 using IdentityServer4.AspNetIdentity;
-using IdentityServer4.Extensions;
 using IdentityServer4.Models;
-using IdentityServer4.Services;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +28,11 @@ namespace BlazorWasmOidcCustom.Server.Services
             var user = await _userManager.GetUserAsync(context.Subject);
             var claims = new List<Claim>();
 
-            if (context.RequestedClaimTypes.Any(x => x == "Resource.API.Test.access.level"))
+            if (context.RequestedClaimTypes.Any(x => x == JwtClaimTypes.Role))
             {
-                //TODO: check user access here before adding the claims required
-                claims.Add(new Claim("access_level", "auth.admin")); 
+                //TODO: check user is a member of a role before adding, possibly utilising AspNetUserRoles
+                claims.Add(new Claim(JwtClaimTypes.Role, "user"));
+                claims.Add(new Claim(JwtClaimTypes.Role, "admin"));
             }
 
             context.IssuedClaims.AddRange(claims);

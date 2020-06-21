@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Identity;
 using IdentityServer4.AccessTokenValidation;
 using BlazorWasmOidcCustom.Server.Services;
+using IdentityModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BlazorWasmOidcCustom.Server
 {
@@ -56,19 +58,30 @@ namespace BlazorWasmOidcCustom.Server
                     {
                         new ApiResource
                         {
-                            Name = "Resource.API.Test",
+                            Name = "Weather.Aud",
+                            DisplayName = "Weather API",
+                            Description = "Weather API Test",
                             ApiSecrets = new List<Secret>
                             {
                                 new Secret("{somesecret}".Sha256())
                             },
+                            //User claims are added to the access token's requested claim types automatically and then accessed in the profile service.
+                            UserClaims = new List<string> {JwtClaimTypes.Role},
+                            //Scopes define what the resource can do
                             Scopes =
                             {
                                 new Scope()
                                 {
-                                    Name = "Resource.API.Test.access",
-                                    DisplayName = "Full access",
-                                    UserClaims = {"Resource.API.Test.access.level" }
-                                }
+                                    Name = "Weather.Read",
+                                    DisplayName = "Weather Read",
+                                    UserClaims = { "Weather.Access.Read" }
+                                },
+                                new Scope()
+                                {
+                                    Name = "Weather.Write",
+                                    DisplayName = "Weather Write",
+                                    UserClaims = { "Weather.Access.Write" }
+                                },
                             }
                         }
                     })
@@ -76,8 +89,8 @@ namespace BlazorWasmOidcCustom.Server
                     {
                         new IdentityServer4.Models.Client
                         {
-                            ClientId = "blazorclient",
-                            ClientName = "Resource.API.Test",
+                            ClientId = "BlazorClient",
+                            ClientName = "Weather.Aud",
                             AllowedGrantTypes = GrantTypes.Code,
                             RequirePkce = true,
                             AllowedScopes = new List<string> {
@@ -85,7 +98,8 @@ namespace BlazorWasmOidcCustom.Server
                                 IdentityServerConstants.StandardScopes.Profile,
                                 IdentityServerConstants.StandardScopes.Email,
                                 IdentityServerConstants.StandardScopes.OfflineAccess,
-                                "Resource.API.Test.access"},
+                                "Weather.Read",
+                                "Weather.Write"},
                             AllowOfflineAccess = true,
                             RedirectUris = {"https://localhost:44303/authentication/login-callback"},
                             PostLogoutRedirectUris = { "https://localhost:44303/authentication/logout-callback" },
@@ -96,9 +110,21 @@ namespace BlazorWasmOidcCustom.Server
                .AddAspNetIdentity<ApplicationUser>()
                .AddProfileService<AuthProfileService>();
 
+            /* In order to make use of scopes and role claims together the policies below are required.
+             * The appropriate policy is then registered in the Authorize attribute against the controller or method that requires access locking down.
+             * This would mean if a client didn't send its intention to use a certain scope then the policy would be void.
+             * This also means if the user didn't have the correct role claim to allow the client to use the correct scope then this would also void the policy.
+             */
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("Resource.API.Test", builder => builder.RequireClaim("access_level", "auth.admin"));
+                options.AddPolicy("WeatherPolicy.Write", builder => {
+                    builder.RequireRole("admin");
+                    builder.RequireScope("Weather.Write");
+                });
+                options.AddPolicy("WeatherPolicy.Read", builder => {
+                    builder.RequireRole(new List<string> { "user", "admin" });
+                    builder.RequireScope("Weather.Read");
+                });
             });
 
             services.AddAuthentication()
@@ -106,7 +132,7 @@ namespace BlazorWasmOidcCustom.Server
                 {
                     options.Authority = "https://localhost:44303";
                     options.RequireHttpsMetadata = true;
-                    options.ApiName = "Resource.API.Test";
+                    options.ApiName = "Weather.Aud";
                 });
 
             services.AddTransient<IWeatherForecastService, WeatherForecastService>();
@@ -151,3 +177,5 @@ namespace BlazorWasmOidcCustom.Server
         }
     }
 }
+
+

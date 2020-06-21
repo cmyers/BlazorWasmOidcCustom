@@ -1,8 +1,4 @@
-﻿using BlazorWasmOidcCustom.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace BlazorWasmOidcCustom.Server.Controllers
 {
-    [Authorize(Policy = "Resource.API.Test", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Policy = "WeatherPolicy.Read", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class WeatherForecastController : ControllerBase
