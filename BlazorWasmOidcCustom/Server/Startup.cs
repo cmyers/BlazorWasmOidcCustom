@@ -169,7 +169,11 @@ namespace BlazorWasmOidcCustom.Server
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("default", "identity/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute(
+                    name: "areas", 
+                    areaName: "identity",
+                    pattern: "identity/{controller=Home}/{action=Index}/{id?}"
+                );
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
