@@ -18,6 +18,7 @@ using IdentityServer4.AccessTokenValidation;
 using BlazorWasmOidcCustom.Server.Services;
 using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace BlazorWasmOidcCustom.Server
 {
@@ -43,6 +44,12 @@ namespace BlazorWasmOidcCustom.Server
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(options =>
+            { 
+                options.LoginPath = new PathString("/Identity/Account/Login");
+                options.LogoutPath = new PathString("/Identity/Account/Logout");
+            });
 
             services.AddIdentityServer()
                .AddDeveloperSigningCredential()
