@@ -28,6 +28,8 @@ namespace BlazorWasmOidcCustom.Client
                 options.ProviderOptions.DefaultScopes.Add("offline_access");
                 options.ProviderOptions.DefaultScopes.Add("Weather.Read");
                 options.ProviderOptions.DefaultScopes.Add("Weather.Write");
+                options.AuthenticationPaths.RemoteRegisterPath = "Identity/Account/Register";
+                options.AuthenticationPaths.RemoteProfilePath = "Identity/Account/Manage";
             });
             builder.Services.AddSingleton<ICounterService, CounterService>();
 

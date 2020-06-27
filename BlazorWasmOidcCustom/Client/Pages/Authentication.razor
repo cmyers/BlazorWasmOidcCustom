@@ -1,13 +1,7 @@
 @page "/authentication/{action}"
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-<RemoteAuthenticatorView Action="@Action" ApplicationPaths="@options"/>
+<RemoteAuthenticatorView Action="@Action" />
 
 @code{
     [Parameter] public string Action { get; set; }
-
-    private RemoteAuthenticationApplicationPathsOptions options = new RemoteAuthenticationApplicationPathsOptions
-    {
-        RemoteRegisterPath = "Identity/Account/Register",
-        RemoteProfilePath = "Identity/Account/Manage"
-    };
 }
