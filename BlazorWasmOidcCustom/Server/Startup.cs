@@ -45,13 +45,12 @@ namespace BlazorWasmOidcCustom.Server
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            services.ConfigureApplicationCookie(options =>
-            { 
-                options.LoginPath = new PathString("/Identity/Account/Login");
-                options.LogoutPath = new PathString("/Identity/Account/Logout");
-            });
-
-            services.AddIdentityServer()
+            services.AddIdentityServer(options =>
+            {
+                options.UserInteraction.ConsentUrl = "/Identity/Consent";
+                options.UserInteraction.LoginUrl = "/Identity/Account/Login";
+                options.UserInteraction.LogoutUrl = "/Identity/Account/Logout";
+            })
                .AddDeveloperSigningCredential()
                .AddInMemoryPersistedGrants()
                .AddInMemoryIdentityResources(new IdentityResourceCollection
@@ -110,7 +109,7 @@ namespace BlazorWasmOidcCustom.Server
                             RedirectUris = {"https://localhost:44303/authentication/login-callback"},
                             PostLogoutRedirectUris = { "https://localhost:44303/authentication/logout-callback" },
                             RequireClientSecret = false,
-                            RequireConsent = false
+                            RequireConsent = true
                         }
                     })
                .AddAspNetIdentity<ApplicationUser>()
@@ -123,11 +122,13 @@ namespace BlazorWasmOidcCustom.Server
              */
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("WeatherPolicy.Write", builder => {
+                options.AddPolicy("WeatherPolicy.Write", builder =>
+                {
                     builder.RequireRole("admin");
                     builder.RequireScope("Weather.Write");
                 });
-                options.AddPolicy("WeatherPolicy.Read", builder => {
+                options.AddPolicy("WeatherPolicy.Read", builder =>
+                {
                     builder.RequireRole(new List<string> { "user", "admin" });
                     builder.RequireScope("Weather.Read");
                 });
@@ -177,7 +178,7 @@ namespace BlazorWasmOidcCustom.Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapAreaControllerRoute(
-                    name: "areas", 
+                    name: "areas",
                     areaName: "identity",
                     pattern: "identity/{controller=Home}/{action=Index}/{id?}"
                 );
