@@ -18,7 +18,6 @@ using IdentityServer4.AccessTokenValidation;
 using BlazorWasmOidcCustom.Server.Services;
 using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
 namespace BlazorWasmOidcCustom.Server
 {
@@ -106,7 +105,7 @@ namespace BlazorWasmOidcCustom.Server
                                 "Weather.Read",
                                 "Weather.Write"},
                             AllowOfflineAccess = true,
-                            RedirectUris = {"https://localhost:44303/authentication/login-callback"},
+                            RedirectUris = {"https://localhost:44303/authentication/login-callback", "https://oauth.pstmn.io/v1/callback"},
                             PostLogoutRedirectUris = { "https://localhost:44303/authentication/logout-callback" },
                             RequireClientSecret = false,
                             RequireConsent = true
@@ -172,7 +171,6 @@ namespace BlazorWasmOidcCustom.Server
             app.UseRouting();
 
             app.UseIdentityServer();
-            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -181,7 +179,7 @@ namespace BlazorWasmOidcCustom.Server
                     name: "areas",
                     areaName: "identity",
                     pattern: "identity/{controller=Home}/{action=Index}/{id?}"
-                );
+                );         
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
