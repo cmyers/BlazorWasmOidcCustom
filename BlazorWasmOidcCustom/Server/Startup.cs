@@ -63,6 +63,21 @@ namespace BlazorWasmOidcCustom.Server
                         new IdentityResources.Profile(),
                         new IdentityResources.Email()
                     })
+               .AddInMemoryApiScopes(new ApiScopeCollection
+               {
+                   new ApiScope
+                   {
+                       Name = "Weather.Read",
+                       DisplayName = "Weather Read",
+                       UserClaims = { "Weather.Access.Read" }
+                   },
+                   new ApiScope
+                   {
+                       Name = "Weather.Write",
+                       DisplayName = "Weather Write",
+                       UserClaims = { "Weather.Access.Write" }
+                   }
+               })
                .AddInMemoryApiResources(new ApiResourceCollection
                     {
                         new ApiResource
@@ -79,18 +94,8 @@ namespace BlazorWasmOidcCustom.Server
                             //Scopes define what the resource can do
                             Scopes =
                             {
-                                new Scope()
-                                {
-                                    Name = "Weather.Read",
-                                    DisplayName = "Weather Read",
-                                    UserClaims = { "Weather.Access.Read" }
-                                },
-                                new Scope()
-                                {
-                                    Name = "Weather.Write",
-                                    DisplayName = "Weather Write",
-                                    UserClaims = { "Weather.Access.Write" }
-                                },
+                                "Weather.Read",
+                                "Weather.Write",
                             }
                         }
                     })
@@ -157,7 +162,6 @@ namespace BlazorWasmOidcCustom.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseWebAssemblyDebugging();
             }
             else
