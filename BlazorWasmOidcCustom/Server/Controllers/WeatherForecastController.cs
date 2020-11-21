@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace BlazorWasmOidcCustom.Server.Controllers
 {
-    [Authorize(Policy = "WeatherPolicy.Read", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(Policy = AuthorizationPolicies.WeatherRead, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [ApiController]
     [Route("api/[controller]")]
     public class WeatherForecastController : ControllerBase

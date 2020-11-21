@@ -18,9 +18,18 @@ using IdentityServer4.AccessTokenValidation;
 using BlazorWasmOidcCustom.Server.Services;
 using IdentityModel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BlazorWasmOidcCustom.Server
 {
+
+    public static class AuthorizationPolicies
+    {
+        public const string WeatherRead = "WeatherPolicy.Read";
+        public const string WeatherWrite = "WeatherPolicy.Write";
+    }
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -54,34 +63,39 @@ namespace BlazorWasmOidcCustom.Server
                         new IdentityResources.Profile(),
                         new IdentityResources.Email()
                     })
+               .AddInMemoryApiScopes(new ApiScopeCollection
+               {
+                   new ApiScope
+                   {
+                       Name = "Weather.Read",
+                       DisplayName = "Weather Read",
+                       UserClaims = { "Weather.Access.Read" }
+                   },
+                   new ApiScope
+                   {
+                       Name = "Weather.Write",
+                       DisplayName = "Weather Write",
+                       UserClaims = { "Weather.Access.Write" }
+                   }
+               })
                .AddInMemoryApiResources(new ApiResourceCollection
                     {
                         new ApiResource
                         {
-                            Name = "Weather.Aud",
+                            Name = "Weather.Aud", //This value identifies the audience
                             DisplayName = "Weather API",
                             Description = "Weather API Test",
                             ApiSecrets = new List<Secret>
                             {
                                 new Secret("{somesecret}".Sha256())
                             },
-                            //User claims are added to the access token's requested claim types automatically and then accessed in the profile service.
+                            //UserClaims are added to the access token's requested claim types automatically and then accessed in the profile service.
                             UserClaims = new List<string> {JwtClaimTypes.Role},
                             //Scopes define what the resource can do
                             Scopes =
                             {
-                                new Scope()
-                                {
-                                    Name = "Weather.Read",
-                                    DisplayName = "Weather Read",
-                                    UserClaims = { "Weather.Access.Read" }
-                                },
-                                new Scope()
-                                {
-                                    Name = "Weather.Write",
-                                    DisplayName = "Weather Write",
-                                    UserClaims = { "Weather.Access.Write" }
-                                },
+                                "Weather.Read",
+                                "Weather.Write",
                             }
                         }
                     })
@@ -90,7 +104,7 @@ namespace BlazorWasmOidcCustom.Server
                         new IdentityServer4.Models.Client
                         {
                             ClientId = "BlazorClient",
-                            ClientName = "Weather.Aud",
+                            ClientName = "WeatherClient",
                             AllowedGrantTypes = GrantTypes.Code,
                             RequirePkce = true,
                             AllowedScopes = new List<string> {
@@ -101,7 +115,7 @@ namespace BlazorWasmOidcCustom.Server
                                 "Weather.Read",
                                 "Weather.Write"},
                             AllowOfflineAccess = true,
-                            RedirectUris = {"https://localhost:44303/authentication/login-callback"},
+                            RedirectUris = {"https://localhost:44303/authentication/login-callback", "https://oauth.pstmn.io/v1/callback"},
                             PostLogoutRedirectUris = { "https://localhost:44303/authentication/logout-callback" },
                             RequireClientSecret = false,
                             RequireConsent = false
@@ -117,22 +131,22 @@ namespace BlazorWasmOidcCustom.Server
              */
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("WeatherPolicy.Write", builder => {
+                options.AddPolicy(AuthorizationPolicies.WeatherWrite, builder => {
                     builder.RequireRole("admin");
                     builder.RequireScope("Weather.Write");
                 });
-                options.AddPolicy("WeatherPolicy.Read", builder => {
+                options.AddPolicy(AuthorizationPolicies.WeatherRead, builder => {
                     builder.RequireRole(new List<string> { "user", "admin" });
                     builder.RequireScope("Weather.Read");
                 });
             });
 
-            services.AddAuthentication()
-                .AddIdentityServerAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme, options =>
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(IdentityServerAuthenticationDefaults.AuthenticationScheme, options =>
                 {
                     options.Authority = "https://localhost:44303";
                     options.RequireHttpsMetadata = true;
-                    options.ApiName = "Weather.Aud";
+                    options.Audience = "Weather.Aud";
                 });
 
             services.AddTransient<IWeatherForecastService, WeatherForecastService>();
@@ -148,7 +162,6 @@ namespace BlazorWasmOidcCustom.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseWebAssemblyDebugging();
             }
             else
