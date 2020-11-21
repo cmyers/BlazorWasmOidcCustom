@@ -58,34 +58,39 @@ namespace BlazorWasmOidcCustom.Server
                         new IdentityResources.Profile(),
                         new IdentityResources.Email()
                     })
-               .AddInMemoryApiResources(new ApiResourceCollection
+               .AddInMemoryApiScopes(new ApiScopeCollection
+               {
+                   new ApiScope
+                   {
+                       Name = "Weather.Read",
+                       DisplayName = "Weather Read",
+                       UserClaims = { "Weather.Access.Read" }
+                   },
+                   new ApiScope
+                   {
+                       Name = "Weather.Write",
+                       DisplayName = "Weather Write",
+                       UserClaims = { "Weather.Access.Write" }
+                   }
+               })
+                .AddInMemoryApiResources(new ApiResourceCollection
                     {
                         new ApiResource
                         {
-                            Name = "Weather.Aud",
+                            Name = "Weather.Aud", //This value identifies the audience
                             DisplayName = "Weather API",
                             Description = "Weather API Test",
                             ApiSecrets = new List<Secret>
                             {
                                 new Secret("{somesecret}".Sha256())
                             },
-                            //User claims are added to the access token's requested claim types automatically and then accessed in the profile service.
+                            //UserClaims are added to the access token's requested claim types automatically and then accessed in the profile service.
                             UserClaims = new List<string> {JwtClaimTypes.Role},
                             //Scopes define what the resource can do
                             Scopes =
                             {
-                                new Scope()
-                                {
-                                    Name = "Weather.Read",
-                                    DisplayName = "Weather Read",
-                                    UserClaims = { "Weather.Access.Read" }
-                                },
-                                new Scope()
-                                {
-                                    Name = "Weather.Write",
-                                    DisplayName = "Weather Write",
-                                    UserClaims = { "Weather.Access.Write" }
-                                },
+                                "Weather.Read",
+                                "Weather.Write",
                             }
                         }
                     })
@@ -108,7 +113,7 @@ namespace BlazorWasmOidcCustom.Server
                             RedirectUris = {"https://localhost:44303/authentication/login-callback", "https://oauth.pstmn.io/v1/callback"},
                             PostLogoutRedirectUris = { "https://localhost:44303/authentication/logout-callback" },
                             RequireClientSecret = false,
-                            RequireConsent = true
+                            RequireConsent = false
                         }
                     })
                .AddAspNetIdentity<ApplicationUser>()
@@ -154,7 +159,6 @@ namespace BlazorWasmOidcCustom.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseWebAssemblyDebugging();
             }
             else
@@ -179,7 +183,7 @@ namespace BlazorWasmOidcCustom.Server
                     name: "areas",
                     areaName: "identity",
                     pattern: "identity/{controller=Home}/{action=Index}/{id?}"
-                );         
+                );
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
                 endpoints.MapFallbackToFile("index.html");
